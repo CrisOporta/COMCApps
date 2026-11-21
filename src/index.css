@@ -1,0 +1,231 @@
+@import "tailwindcss";
+@source "../node_modules/preline/dist/*.{js,mjs}";
+@import "preline/variants.css";
+@import "nprogress/nprogress.css";
+
+/* Acento de marca: Índigo Ejecutivo de COMCApps (#4F46E5).
+   Las utilidades violet y blue comparten esta escala para mantener consistencia
+   absoluta y facilitar cambios de identidad desde un único lugar. */
+@theme {
+  --color-blue-50: #eef2ff;
+  --color-blue-100: #e0e7ff;
+  --color-blue-200: #c7d2fe;
+  --color-blue-300: #a5b4fc;
+  --color-blue-400: #818cf8;
+  --color-blue-500: #6366f1;
+  --color-blue-600: #4f46e5;
+  --color-blue-700: #4338ca;
+  --color-blue-800: #3730a3;
+  --color-blue-900: #312e81;
+  --color-blue-950: #1e1b4b;
+
+  --color-violet-50: #eef2ff;
+  --color-violet-100: #e0e7ff;
+  --color-violet-200: #c7d2fe;
+  --color-violet-300: #a5b4fc;
+  --color-violet-400: #818cf8;
+  --color-violet-500: #6366f1;
+  --color-violet-600: #4f46e5;
+  --color-violet-700: #4338ca;
+  --color-violet-800: #3730a3;
+  --color-violet-900: #312e81;
+  --color-violet-950: #1e1b4b;
+}
+
+/* Dark mode activado por clase en <html> */
+@variant dark (&:where(.dark, .dark *));
+
+/* Base visual compartida para las superficies de COMCApps (patrón OptimizaLey) */
+@layer components {
+  .cm-surface {
+    @apply rounded-2xl border border-zinc-200/80 bg-white shadow-[0_2px_12px_-5px_rgba(24,24,27,0.12)] dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-[0_2px_16px_-6px_rgba(0,0,0,0.55)];
+  }
+
+  .cm-action {
+    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer;
+  }
+
+  .cm-action-primary {
+    @apply bg-violet-600 text-white hover:bg-violet-700 active:bg-violet-800 shadow-sm shadow-violet-200 dark:shadow-violet-950/40;
+  }
+
+  .cm-action-secondary {
+    @apply border border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-zinc-600 dark:hover:bg-zinc-800;
+  }
+}
+
+/* ── NProgress — barra de navegación fluida ────────────────────────── */
+#nprogress {
+  pointer-events: none !important;
+}
+
+#nprogress .bar {
+  background: #4f46e5;
+  height: 2.5px;
+  position: fixed;
+  z-index: 99999;
+  top: 0;
+  left: 0;
+}
+
+#nprogress .peg {
+  box-shadow:
+    0 0 8px #4f46e5,
+    0 0 4px #4f46e5;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* ── Navegación con teclado accesible estilo Cloudflare / OptimizaLey ── */
+*:focus-visible,
+[data-focus-visible="true"]:focus {
+  outline: 1px solid #4f46e5 !important;
+  outline-offset: 2px !important;
+}
+
+html.dark *:focus-visible,
+html.dark [data-focus-visible="true"]:focus {
+  outline: 1px solid #818cf8 !important;
+  outline-offset: 2px !important;
+}
+
+/* ── Inputs, selects y textareas: borde nítido en focus ────────────── */
+input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]):focus,
+input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]):focus-visible,
+select:focus,
+select:focus-visible,
+textarea:focus,
+textarea:focus-visible {
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+  border-color: #4f46e5 !important;
+}
+
+input[aria-invalid="true"]:focus,
+input[aria-invalid="true"]:focus-visible,
+textarea[aria-invalid="true"]:focus,
+textarea[aria-invalid="true"]:focus-visible {
+  border-color: #f43f5e !important;
+}
+
+html.dark input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]):focus,
+html.dark input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]):focus-visible,
+html.dark select:focus,
+html.dark select:focus-visible,
+html.dark textarea:focus,
+html.dark textarea:focus-visible {
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+  border-color: #818cf8 !important;
+  background-color: #09090b !important;
+  color: #f4f4f5 !important;
+}
+
+/* Base typography, smooth scrolling, and uniform form controls */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  html,
+  body {
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: #fbfbfb;
+    color: #18181b;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html.dark body {
+    background-color: #030303;
+    color: #f4f4f5;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="file"]):not([type="color"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
+  select {
+    height: 42px;
+    min-height: 42px;
+    box-sizing: border-box;
+  }
+
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.65rem center;
+    background-repeat: no-repeat;
+    background-size: 1.15em 1.15em;
+    padding-right: 2.25rem !important;
+  }
+
+  html.dark select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  }
+}
+
+/* ── Scrollbar minimalista ─────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(161, 161, 170, 0.35);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(113, 113, 122, 0.65);
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background-color: rgba(113, 113, 122, 0.35);
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(161, 161, 170, 0.65);
+}
+
+/* ── Animación de marquee continuo para stack tecnológico ──────────── */
+@keyframes marqueeScroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marqueeScroll 34s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Material Symbols helper */
+.ms-icon {
+  font-family: 'Material Symbols Rounded';
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+}

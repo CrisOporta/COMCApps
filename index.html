@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es" class="bg-[#fbfbfb] dark:bg-[#030303]">
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+      (function () {
+        try {
+          var mode = localStorage.getItem('comcapps_theme') || 'system';
+          var isDark =
+            mode === 'dark' ||
+            (mode === 'system' &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.backgroundColor = '#030303';
+            document.documentElement.style.colorScheme = 'dark';
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.backgroundColor = '#fbfbfb';
+            document.documentElement.style.colorScheme = 'light';
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="COMCApps — Ingeniería de software a medida, aplicaciones móviles, plataformas SaaS, arquitectura cloud e inteligencia artificial para empresas ambiciosas."
+    />
+    <meta name="theme-color" content="#030303" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#fbfbfb" media="(prefers-color-scheme: light)" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0"
+    />
+    <title>COMCApps | Ingeniería de Software y Productos Digitales</title>
+  </head>
+  <body class="antialiased selection:bg-violet-600/20 bg-[#fbfbfb] dark:bg-[#030303] text-zinc-800 dark:text-zinc-200">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
