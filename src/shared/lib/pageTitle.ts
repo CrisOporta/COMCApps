@@ -3,6 +3,7 @@ import { COMPANY } from '@/shared/config/company';
 const ROUTE_TITLES: Array<{ match: (path: string) => boolean; title: string }> = [
   { match: p => p === '/', title: `${COMPANY.name} | ${COMPANY.tagline}` },
   { match: p => p.startsWith('/servicios'), title: `Servicios | ${COMPANY.name}` },
+  { match: p => p.startsWith('/local'), title: `Sucursal Local y Servicios Físicos | ${COMPANY.name}` },
   { match: p => p.startsWith('/proyectos'), title: `Proyectos | ${COMPANY.name}` },
   { match: p => p.startsWith('/equipo'), title: `Equipo y Cultura | ${COMPANY.name}` },
   { match: p => p.startsWith('/blog'), title: `Blog Técnico | ${COMPANY.name}` },

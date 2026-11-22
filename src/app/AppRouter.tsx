@@ -1,6 +1,7 @@
 import { createBrowserRouter, RouterProvider } from 'react-router';
 import { homeRoutes } from '@/features/home/routes';
 import { servicesRoutes } from '@/features/services/routes';
+import { localRoutes } from '@/features/local/routes';
 import { projectsRoutes } from '@/features/projects/routes';
 import { teamRoutes } from '@/features/team/routes';
 import { blogRoutes } from '@/features/blog/routes';
@@ -28,6 +29,7 @@ const router = createBrowserRouter([
         children: [
           ...homeRoutes,
           ...servicesRoutes,
+          ...localRoutes,
           ...projectsRoutes,
           ...teamRoutes,
           ...blogRoutes,

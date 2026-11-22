@@ -113,6 +113,43 @@ export function ExternalLinkIcon({ className = 'size-4' }: { className?: string 
 }
 
 export function MaterialIcon({ name, className = 'text-[22px]' }: { name: string; className?: string }) {
+  if (name === 'local_printshop') {
+    return (
+      <svg
+        className={`size-[1em] ${className}`}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 6 2 18 2 18 9" />
+        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+        <rect x="6" y="14" width="12" height="8" rx="1" />
+      </svg>
+    );
+  }
+
+  if (name === 'photo_camera') {
+    return (
+      <svg
+        className={`size-[1em] ${className}`}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+        <circle cx="12" cy="13" r="4" />
+      </svg>
+    );
+  }
+
   return (
     <span className={`ms-icon ${className}`} aria-hidden="true">
       {name}

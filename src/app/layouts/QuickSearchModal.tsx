@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { SERVICES } from '@/features/services/data/servicesData';
+import { LOCAL_SERVICES } from '@/features/local/data/localData';
 import { PROJECTS } from '@/features/projects/data/projectsData';
 import { BLOG_POSTS } from '@/features/blog/data/blogData';
 import { TEAM_MEMBERS } from '@/features/team/data/teamData';
@@ -13,7 +14,7 @@ interface QuickSearchModalProps {
 
 interface SearchEntry {
   id: string;
-  group: 'Servicios' | 'Proyectos' | 'Blog' | 'Equipo' | 'Navegación';
+  group: 'Servicios' | 'Local' | 'Proyectos' | 'Blog' | 'Equipo' | 'Navegación';
   title: string;
   subtitle: string;
   to: string;
@@ -52,6 +53,22 @@ export function QuickSearchModal({ open, onClose }: QuickSearchModalProps) {
         to: '/contacto',
         icon: 'mail',
       },
+      {
+        id: 'nav-local',
+        group: 'Navegación',
+        title: 'Sucursal Local y Servicios Físicos',
+        subtitle: 'Reparación de PC, impresoras, Windows/Office, fotos carnet, CCTV y redes',
+        to: '/local',
+        icon: 'storefront',
+      },
+      ...LOCAL_SERVICES.map(item => ({
+        id: `local-${item.id}`,
+        group: 'Local' as const,
+        title: item.title,
+        subtitle: `${item.category} · ${item.shortDesc}`,
+        to: `/local#${item.id}`,
+        icon: item.icon,
+      })),
       ...SERVICES.map(s => ({
         id: `srv-${s.id}`,
         group: 'Servicios' as const,

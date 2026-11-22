@@ -19,6 +19,7 @@ import { QuickSearchModal } from './QuickSearchModal';
 const NAV_ITEMS = [
   { to: '/', label: 'Inicio', end: true },
   { to: '/servicios', label: 'Servicios', end: false },
+  { to: '/local', label: 'Local', end: false },
   { to: '/proyectos', label: 'Proyectos', end: false },
   { to: '/equipo', label: 'Equipo', end: false },
   { to: '/blog', label: 'Blog', end: false },
@@ -186,6 +187,11 @@ export default function MainLayout() {
                 <li>
                   <Link to="/servicios" className="text-zinc-500 dark:text-zinc-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
                     Servicios y Capacidades
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/local" className="text-zinc-500 dark:text-zinc-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+                    Sucursal Local y Servicios Físicos
                   </Link>
                 </li>
                 <li>
