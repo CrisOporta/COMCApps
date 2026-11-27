@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { COMPANY } from '@/shared/config/company';
+import { useSiteSettings } from '@/shared/hooks/useCmsData';
 import { Blob } from '@/shared/components/ui/Blob';
 import { ArrowRightIcon, CheckIcon, MaterialIcon } from '@/shared/components/ui/Icons';
 
@@ -53,6 +54,7 @@ const PREVIEW_TABS = [
 ] as const;
 
 export function HeroSection() {
+  const settings = useSiteSettings();
   const [activeTab, setActiveTab] = useState<(typeof PREVIEW_TABS)[number]['id']>('saas');
   const current = PREVIEW_TABS.find(t => t.id === activeTab) ?? PREVIEW_TABS[0];
 
@@ -65,11 +67,6 @@ export function HeroSection() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-10 items-center">
           {/* Columna izquierda: copy principal */}
           <div className="lg:col-span-7">
-            <span className="inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-violet-500/30 bg-violet-50 dark:bg-violet-600/10 px-3.5 py-1.5 text-xs font-semibold text-violet-700 dark:text-violet-300 uppercase tracking-wide mb-6">
-              <span className="size-1.5 rounded-full bg-violet-500 animate-pulse" />
-              Estudio de Ingeniería de Software
-            </span>
-
             <h1 className="text-4xl sm:text-5xl lg:text-[3.4rem] font-bold tracking-tight text-zinc-900 dark:text-white leading-[1.08]">
               Construimos software{' '}
               <span className="text-violet-600 dark:text-violet-400">
@@ -78,8 +75,8 @@ export function HeroSection() {
             </h1>
 
             <p className="mt-6 text-base sm:text-lg text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-2xl">
-              En <strong className="font-semibold text-zinc-800 dark:text-zinc-200">{COMPANY.name}</strong> transformamos
-              ideas complejas en plataformas web, aplicaciones móviles nativas y ecosistemas con Inteligencia Artificial listos para producción.
+              En <strong className="font-semibold text-zinc-800 dark:text-zinc-200">{settings.companyName}</strong>{' '}
+              {settings.shortDesc}
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3.5">
@@ -119,18 +116,23 @@ export function HeroSection() {
           {/* Columna derecha: panel interactivo de capacidades */}
           <div className="lg:col-span-5">
             <div className="cm-surface overflow-hidden">
-              {/* Top bar estilo ventana de ingeniería */}
-              <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-950/60 px-4 py-3">
-                <div className="flex items-center gap-1.5" aria-hidden="true">
-                  <span className="size-2.5 rounded-full bg-rose-400/80" />
-                  <span className="size-2.5 rounded-full bg-amber-400/80" />
-                  <span className="size-2.5 rounded-full bg-emerald-400/80" />
+              {/* Banner oficial COMCApps */}
+              <div className="relative h-36 sm:h-40 overflow-hidden bg-zinc-950">
+                <img
+                  src={settings.bannerUrl || '/banner.png'}
+                  alt={`Banner oficial de ${settings.companyName}`}
+                  className="w-full h-full object-cover object-center"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/75 via-transparent to-transparent" />
+                <div className="absolute bottom-2.5 left-4 right-4 flex items-center justify-between">
+                  <span className="text-[11px] font-mono text-white/90 bg-zinc-950/60 backdrop-blur-sm px-2.5 py-0.5 rounded-full border border-white/15">
+                    comcapps://architecture
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-300 bg-zinc-950/60 backdrop-blur-sm px-2.5 py-0.5 rounded-full border border-white/15">
+                    <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    Live
+                  </span>
                 </div>
-                <span className="text-[11px] font-mono text-zinc-400">comcapps://architecture</span>
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                  <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Live
-                </span>
               </div>
 
               {/* Selector de especialidad */}

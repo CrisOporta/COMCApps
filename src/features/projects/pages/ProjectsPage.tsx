@@ -1,18 +1,20 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
-import { PROJECT_CATEGORIES, PROJECTS, type ProjectCategory } from '../data/projectsData';
+import { PROJECT_CATEGORIES, type ProjectCategory } from '../data/projectsData';
+import { useProjects } from '../hooks/useProjects';
 import { CtaBanner } from '@/features/home/components/CtaBanner';
 import { Blob } from '@/shared/components/ui/Blob';
 import { Reveal } from '@/shared/components/ui/Reveal';
 import { ArrowRightIcon, MaterialIcon, SearchIcon } from '@/shared/components/ui/Icons';
 
 export default function ProjectsPage() {
+  const { items: projects, loading } = useProjects();
   const [category, setCategory] = useState<'Todos' | ProjectCategory>('Todos');
   const [search, setSearch] = useState('');
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return PROJECTS.filter(project => {
+    return projects.filter(project => {
       const matchesCat = category === 'Todos' || project.category === category;
       if (!matchesCat) return false;
       if (!q) return true;
@@ -23,7 +25,7 @@ export default function ProjectsPage() {
         project.stack.some(t => t.toLowerCase().includes(q))
       );
     });
-  }, [category, search]);
+  }, [projects, category, search]);
 
   return (
     <div>
@@ -31,10 +33,7 @@ export default function ProjectsPage() {
       <section className="relative overflow-hidden border-b border-zinc-100 bg-gradient-to-br from-violet-50 via-white to-white dark:border-zinc-800 dark:from-violet-950/30 dark:via-zinc-950 dark:to-zinc-950">
         <Blob className="absolute -right-32 -top-32 size-96 bg-violet-100 dark:bg-violet-900/20" />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-20">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-violet-700 dark:border-violet-500/30 dark:bg-violet-600/10 dark:text-violet-300">
-            Portafolio & Casos de Estudio
-          </span>
-          <h1 className="mt-5 text-4xl sm:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white max-w-3xl leading-[1.1]">
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white max-w-3xl leading-[1.1]">
             Software real en <span className="text-violet-600 dark:text-violet-400">producción</span>
           </h1>
           <p className="mt-4 max-w-2xl text-base text-zinc-600 dark:text-zinc-400 leading-relaxed">
@@ -76,7 +75,13 @@ export default function ProjectsPage() {
           </div>
         </div>
 
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 3 }).map((_, idx) => (
+              <div key={idx} className="cm-surface h-80 animate-pulse bg-zinc-100/70 dark:bg-zinc-900/60" />
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="cm-surface p-12 text-center">
             <p className="text-base font-semibold text-zinc-900 dark:text-white">
               No encontramos proyectos con esos filtros
@@ -104,9 +109,20 @@ export default function ProjectsPage() {
                   className="group cm-surface overflow-hidden flex flex-col h-full transition-all hover:shadow-lg hover:-translate-y-0.5"
                 >
                   <div
-                    className={`relative h-44 bg-gradient-to-br ${project.gradient} p-5 flex flex-col justify-between`}
+                    className={`relative h-44 bg-gradient-to-br ${project.gradient} p-5 flex flex-col justify-between overflow-hidden`}
                   >
-                    <div className="flex items-center justify-between">
+                    {project.featuredImageUrl && (
+                      <>
+                        <img
+                          src={project.featuredImageUrl}
+                          alt={project.title}
+                          loading="lazy"
+                          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-zinc-950/45 to-zinc-950/30" />
+                      </>
+                    )}
+                    <div className="relative z-10 flex items-center justify-between">
                       <span className="rounded-full bg-white/15 backdrop-blur-xs border border-white/20 px-2.5 py-0.5 text-[11px] font-semibold text-white">
                         {project.category}
                       </span>
@@ -115,7 +131,7 @@ export default function ProjectsPage() {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="relative z-10 flex items-center gap-3">
                       <div className="size-12 rounded-xl bg-white/15 backdrop-blur-xs border border-white/20 flex items-center justify-center text-white shrink-0">
                         <MaterialIcon name={project.icon} className="text-[26px]" />
                       </div>

@@ -12,6 +12,7 @@ export interface LocalServiceItem {
   fullDesc: string;
   imageUrl: string;
   imageAlt: string;
+  gallery?: string[];
   icon: string;
   turnaround: string;
   homeServiceAvailable: boolean;

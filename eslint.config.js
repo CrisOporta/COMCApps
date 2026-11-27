@@ -36,7 +36,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['src/features/**/services/**/*.ts', 'src/features/**/schemas/**/*.ts'],
+    files: ['src/features/*/services/**/*.ts', 'src/features/*/schemas/**/*.ts'],
     rules: {
       'no-restricted-imports': [
         'error',

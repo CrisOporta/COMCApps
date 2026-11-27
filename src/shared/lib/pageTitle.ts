@@ -8,6 +8,8 @@ const ROUTE_TITLES: Array<{ match: (path: string) => boolean; title: string }> =
   { match: p => p.startsWith('/equipo'), title: `Equipo y Cultura | ${COMPANY.name}` },
   { match: p => p.startsWith('/blog'), title: `Blog Técnico | ${COMPANY.name}` },
   { match: p => p.startsWith('/contacto'), title: `Contacto | ${COMPANY.name}` },
+  { match: p => p.startsWith('/login'), title: `Acceso Privado | ${COMPANY.name}` },
+  { match: p => p.startsWith('/admin'), title: `Panel CMS | ${COMPANY.name}` },
   { match: p => p.startsWith('/privacidad'), title: `Política de Privacidad | ${COMPANY.name}` },
   { match: p => p.startsWith('/terminos'), title: `Términos de Uso | ${COMPANY.name}` },
 ];

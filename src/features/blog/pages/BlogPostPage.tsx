@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
-import { BLOG_POSTS } from '../data/blogData';
+import { useBlogPosts } from '../hooks/useBlogPosts';
 import { ArrowLeftIcon, ArrowRightIcon, MaterialIcon } from '@/shared/components/ui/Icons';
 import { toast } from '@/shared/lib/toast';
 
 export default function BlogPostPage() {
   const { slug } = useParams();
+  const { items: blogPosts, loading } = useBlogPosts();
   const [readProgress, setReadProgress] = useState(0);
-  const post = BLOG_POSTS.find(p => p.slug === slug);
+  const post = blogPosts.find(p => p.slug === slug);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -19,6 +20,15 @@ export default function BlogPostPage() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  if (loading && !post) {
+    return (
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 py-20 space-y-6 animate-pulse">
+        <div className="h-48 rounded-3xl bg-zinc-100 dark:bg-zinc-900" />
+        <div className="h-64 rounded-2xl bg-zinc-100 dark:bg-zinc-900" />
+      </div>
+    );
+  }
 
   if (!post) {
     return (
@@ -38,7 +48,7 @@ export default function BlogPostPage() {
     );
   }
 
-  const related = BLOG_POSTS.filter(p => p.slug !== post.slug).slice(0, 2);
+  const related = blogPosts.filter(p => p.slug !== post.slug).slice(0, 2);
 
   const handleShare = () => {
     navigator.clipboard?.writeText(window.location.href).then(() => {
@@ -139,6 +149,35 @@ export default function BlogPostPage() {
           </aside>
 
           <article className="space-y-8">
+            {post.featuredImageUrl && (
+              <div className="cm-surface overflow-hidden">
+                <img
+                  src={post.featuredImageUrl}
+                  alt={post.title}
+                  className="w-full max-h-[420px] object-cover"
+                />
+                {post.gallery && post.gallery.length > 1 && (
+                  <div className="p-3 border-t border-zinc-100 dark:border-zinc-800 grid grid-cols-3 sm:grid-cols-4 gap-2">
+                    {post.gallery.map(img => (
+                      <a
+                        key={img.id}
+                        href={img.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="aspect-video rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800 block"
+                      >
+                        <img
+                          src={img.url}
+                          alt={img.altText || post.title}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform"
+                        />
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {post.sections.map((section, idx) => (
               <section
                 key={section.id}

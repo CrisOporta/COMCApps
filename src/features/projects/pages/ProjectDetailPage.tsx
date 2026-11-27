@@ -1,11 +1,23 @@
+import { useState } from 'react';
 import { Link, useParams } from 'react-router';
-import { PROJECTS } from '../data/projectsData';
+import { useProjects } from '../hooks/useProjects';
 import { CtaBanner } from '@/features/home/components/CtaBanner';
 import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, MaterialIcon } from '@/shared/components/ui/Icons';
 
 export default function ProjectDetailPage() {
   const { slug } = useParams();
-  const project = PROJECTS.find(p => p.slug === slug);
+  const { items: projects, loading } = useProjects();
+  const project = projects.find(p => p.slug === slug);
+  const [activePhoto, setActivePhoto] = useState<string | null>(null);
+
+  if (loading && !project) {
+    return (
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-20 space-y-6 animate-pulse">
+        <div className="h-56 rounded-3xl bg-zinc-100 dark:bg-zinc-900" />
+        <div className="h-40 rounded-2xl bg-zinc-100 dark:bg-zinc-900" />
+      </div>
+    );
+  }
 
   if (!project) {
     return (
@@ -25,13 +37,25 @@ export default function ProjectDetailPage() {
     );
   }
 
-  const related = PROJECTS.filter(p => p.slug !== project.slug).slice(0, 2);
+  const related = projects.filter(p => p.slug !== project.slug).slice(0, 2);
+  const gallery = project.gallery ?? [];
+  const mainPhoto = activePhoto || project.featuredImageUrl || gallery[0]?.url || null;
 
   return (
     <div>
       {/* ── Hero del proyecto ────────────────────────────────────────── */}
       <section className={`relative overflow-hidden bg-gradient-to-br ${project.gradient} text-white`}>
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-22">
+        {project.featuredImageUrl && (
+          <>
+            <img
+              src={project.featuredImageUrl}
+              alt={project.title}
+              className="absolute inset-0 w-full h-full object-cover opacity-30"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-zinc-950/60 to-zinc-950/40" />
+          </>
+        )}
+        <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-22">
           <Link
             to="/proyectos"
             className="inline-flex items-center gap-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 px-3.5 py-1.5 text-xs font-semibold text-white transition-colors"
@@ -84,6 +108,40 @@ export default function ProjectDetailPage() {
       <section className="mx-auto max-w-6xl px-4 sm:px-6 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <div className="lg:col-span-8 space-y-6">
+            {mainPhoto && (
+              <div className="cm-surface overflow-hidden">
+                <div className="aspect-video bg-zinc-100 dark:bg-zinc-900 overflow-hidden">
+                  <img
+                    src={mainPhoto}
+                    alt={project.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                {gallery.length > 1 && (
+                  <div className="p-3 border-t border-zinc-100 dark:border-zinc-800 flex gap-2 overflow-x-auto">
+                    {gallery.map(img => (
+                      <button
+                        key={img.id}
+                        type="button"
+                        onClick={() => setActivePhoto(img.url)}
+                        className={`h-16 w-24 shrink-0 rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
+                          mainPhoto === img.url
+                            ? 'border-violet-600'
+                            : 'border-transparent opacity-75 hover:opacity-100'
+                        }`}
+                      >
+                        <img
+                          src={img.url}
+                          alt={img.altText || project.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="cm-surface p-6 sm:p-8">
               <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2.5">
                 <span className="size-8 rounded-lg bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center">
@@ -162,9 +220,21 @@ export default function ProjectDetailPage() {
                 ))}
               </ul>
 
+              {project.liveUrl && (
+                <a
+                  href={project.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-5 w-full cm-action cm-action-secondary"
+                >
+                  <MaterialIcon name="open_in_new" className="text-[16px]" />
+                  Ver sitio en vivo
+                </a>
+              )}
+
               <Link
                 to={`/contacto?servicio=${encodeURIComponent(`Proyecto similar a ${project.title}`)}`}
-                className="mt-6 w-full cm-action cm-action-primary"
+                className="mt-3 w-full cm-action cm-action-primary"
               >
                 Construir algo similar
                 <ArrowRightIcon />

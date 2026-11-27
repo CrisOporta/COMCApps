@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
-import { SERVICES, WORK_PROCESS } from '../data/servicesData';
+import { WORK_PROCESS } from '../data/servicesData';
+import { useSoftwareServices } from '../hooks/useSoftwareServices';
 import { ProjectEstimator } from '../components/ProjectEstimator';
 import { CtaBanner } from '@/features/home/components/CtaBanner';
 import { Blob } from '@/shared/components/ui/Blob';
@@ -45,16 +46,15 @@ const ENGAGEMENT_MODELS = [
 ];
 
 export default function ServicesPage() {
+  const { items: services } = useSoftwareServices();
+
   return (
     <div>
       {/* ── Hero de sección (estilo DocumentationPage de OptimizaLey) ── */}
       <section className="relative overflow-hidden border-b border-zinc-100 bg-gradient-to-br from-violet-50 via-white to-white dark:border-zinc-800 dark:from-violet-950/30 dark:via-zinc-950 dark:to-zinc-950">
         <Blob className="absolute -right-32 -top-32 size-96 bg-violet-100 dark:bg-violet-900/20" />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-20">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-violet-700 dark:border-violet-500/30 dark:bg-violet-600/10 dark:text-violet-300">
-            Servicios & Capacidades
-          </span>
-          <h1 className="mt-5 text-4xl sm:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white max-w-3xl leading-[1.1]">
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white max-w-3xl leading-[1.1]">
             Ingeniería de extremo a extremo para{' '}
             <span className="text-violet-600 dark:text-violet-400">productos digitales</span>
           </h1>
@@ -76,10 +76,10 @@ export default function ServicesPage() {
       {/* ── Catálogo detallado de servicios ──────────────────────────── */}
       <section className="mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-20">
         <div className="space-y-6">
-          {SERVICES.map((service, index) => (
+          {services.map((service, index) => (
             <Reveal key={service.id} delay={(index % 2) * 80}>
               <article
-                id={service.id}
+                id={service.slug}
                 className="scroll-mt-24 cm-surface p-6 sm:p-8 transition-all hover:border-violet-200 dark:hover:border-violet-800/70"
               >
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
@@ -119,29 +119,62 @@ export default function ServicesPage() {
                         </span>
                       ))}
                     </div>
+
+                    {service.gallery && service.gallery.length > 0 && (
+                      <div className="mt-5 grid grid-cols-3 sm:grid-cols-4 gap-2">
+                        {service.gallery.map(img => (
+                          <a
+                            key={img.id}
+                            href={img.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="aspect-video rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 block"
+                          >
+                            <img
+                              src={img.url}
+                              alt={img.altText || service.title}
+                              loading="lazy"
+                              className="w-full h-full object-cover hover:scale-105 transition-transform"
+                            />
+                          </a>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
-                  <div className="lg:col-span-5 rounded-2xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-950/50 p-5">
-                    <p className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-3">
-                      Entregables clave
-                    </p>
-                    <ul className="space-y-2.5">
-                      {service.deliverables.map(item => (
-                        <li
-                          key={item}
-                          className="flex items-start gap-2.5 text-sm text-zinc-700 dark:text-zinc-300"
-                        >
-                          <CheckIcon className="size-4 text-emerald-500 shrink-0 mt-0.5" />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <Link
-                      to={`/contacto?servicio=${encodeURIComponent(service.title)}`}
-                      className="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold text-violet-600 dark:text-violet-400 hover:underline"
-                    >
-                      Consultar por este servicio <ArrowRightIcon className="size-3.5" />
-                    </Link>
+                  <div className="lg:col-span-5 space-y-4">
+                    {service.featuredImageUrl && (
+                      <div className="h-44 rounded-2xl overflow-hidden border border-zinc-100 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900">
+                        <img
+                          src={service.featuredImageUrl}
+                          alt={service.title}
+                          loading="lazy"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="rounded-2xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-950/50 p-5">
+                      <p className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-3">
+                        Entregables clave
+                      </p>
+                      <ul className="space-y-2.5">
+                        {service.deliverables.map(item => (
+                          <li
+                            key={item}
+                            className="flex items-start gap-2.5 text-sm text-zinc-700 dark:text-zinc-300"
+                          >
+                            <CheckIcon className="size-4 text-emerald-500 shrink-0 mt-0.5" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <Link
+                        to={`/contacto?servicio=${encodeURIComponent(service.title)}`}
+                        className="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold text-violet-600 dark:text-violet-400 hover:underline"
+                      >
+                        Consultar por este servicio <ArrowRightIcon className="size-3.5" />
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </article>

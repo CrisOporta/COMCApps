@@ -1,20 +1,22 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
-import { BLOG_CATEGORIES, BLOG_POSTS, type BlogCategory } from '../data/blogData';
+import { BLOG_CATEGORIES, type BlogCategory } from '../data/blogData';
+import { useBlogPosts } from '../hooks/useBlogPosts';
 import { CtaBanner } from '@/features/home/components/CtaBanner';
 import { Blob } from '@/shared/components/ui/Blob';
 import { Reveal } from '@/shared/components/ui/Reveal';
 import { ArrowRightIcon, SearchIcon } from '@/shared/components/ui/Icons';
 
 export default function BlogPage() {
+  const { items: blogPosts, loading } = useBlogPosts();
   const [category, setCategory] = useState<'Todos' | BlogCategory>('Todos');
   const [search, setSearch] = useState('');
 
-  const featured = BLOG_POSTS.find(p => p.featured) ?? BLOG_POSTS[0];
+  const featured = blogPosts.find(p => p.featured) ?? blogPosts[0];
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return BLOG_POSTS.filter(post => {
+    return blogPosts.filter(post => {
       const matchesCat = category === 'Todos' || post.category === category;
       if (!matchesCat) return false;
       if (!q) return true;
@@ -24,7 +26,7 @@ export default function BlogPage() {
         post.tags.some(t => t.toLowerCase().includes(q))
       );
     });
-  }, [category, search]);
+  }, [blogPosts, category, search]);
 
   return (
     <div>
@@ -32,10 +34,7 @@ export default function BlogPage() {
       <section className="relative overflow-hidden border-b border-zinc-100 bg-gradient-to-br from-violet-50 via-white to-white dark:border-zinc-800 dark:from-violet-950/30 dark:via-zinc-950 dark:to-zinc-950">
         <Blob className="absolute -right-32 -top-32 size-96 bg-violet-100 dark:bg-violet-900/20" />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-20">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-violet-700 dark:border-violet-500/30 dark:bg-violet-600/10 dark:text-violet-300">
-            Blog de Ingeniería
-          </span>
-          <h1 className="mt-5 text-4xl sm:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white max-w-3xl leading-[1.1]">
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white max-w-3xl leading-[1.1]">
             Artículos, guías y{' '}
             <span className="text-violet-600 dark:text-violet-400">arquitectura real</span>
           </h1>
@@ -47,45 +46,56 @@ export default function BlogPage() {
 
       <section className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16">
         {/* ── Artículo destacado ──────────────────────────────────────── */}
-        {category === 'Todos' && !search.trim() && (
+        {featured && category === 'Todos' && !search.trim() && (
           <Reveal>
             <Link
               to={`/blog/${featured.slug}`}
-              className="group mb-12 block overflow-hidden rounded-3xl border border-violet-200 dark:border-violet-500/30 bg-gradient-to-br from-violet-50/80 via-white to-white dark:from-violet-950/35 dark:via-zinc-900 dark:to-zinc-900 p-6 sm:p-10 shadow-sm hover:shadow-lg transition-all"
+              className="group mb-12 block overflow-hidden rounded-3xl border border-violet-200 dark:border-violet-500/30 bg-gradient-to-br from-violet-50/80 via-white to-white dark:from-violet-950/35 dark:via-zinc-900 dark:to-zinc-900 shadow-sm hover:shadow-lg transition-all"
             >
-              <div className="flex flex-wrap items-center gap-2.5 text-xs mb-4">
-                <span className="rounded-full bg-violet-600 px-3 py-1 font-bold text-white uppercase tracking-wide">
-                  Destacado
-                </span>
-                <span className="rounded-full bg-violet-100 dark:bg-violet-600/20 px-3 py-1 font-semibold text-violet-700 dark:text-violet-300">
-                  {featured.category}
-                </span>
-                <span className="text-zinc-400">
-                  {featured.publishedAt} · {featured.readTime}
-                </span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors max-w-3xl leading-tight">
-                {featured.title}
-              </h2>
-              <p className="mt-3 text-sm sm:text-base text-zinc-600 dark:text-zinc-400 max-w-2xl leading-relaxed">
-                {featured.excerpt}
-              </p>
-              <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <span className="size-9 rounded-full bg-violet-600 text-white text-xs font-bold flex items-center justify-center">
-                    {featured.author.initials}
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold text-zinc-900 dark:text-white">
-                      {featured.author.name}
-                    </p>
-                    <p className="text-xs text-zinc-400">{featured.author.role}</p>
-                  </div>
+              {featured.featuredImageUrl && (
+                <div className="h-56 sm:h-72 overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+                  <img
+                    src={featured.featuredImageUrl}
+                    alt={featured.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
                 </div>
-                <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-violet-600 dark:text-violet-400">
-                  Leer artículo completo
-                  <ArrowRightIcon className="size-4 group-hover:translate-x-1 transition-transform" />
-                </span>
+              )}
+              <div className="p-6 sm:p-10">
+                <div className="flex flex-wrap items-center gap-2.5 text-xs mb-4">
+                  <span className="rounded-full bg-violet-600 px-3 py-1 font-bold text-white uppercase tracking-wide">
+                    Destacado
+                  </span>
+                  <span className="rounded-full bg-violet-100 dark:bg-violet-600/20 px-3 py-1 font-semibold text-violet-700 dark:text-violet-300">
+                    {featured.category}
+                  </span>
+                  <span className="text-zinc-400">
+                    {featured.publishedAt} · {featured.readTime}
+                  </span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors max-w-3xl leading-tight">
+                  {featured.title}
+                </h2>
+                <p className="mt-3 text-sm sm:text-base text-zinc-600 dark:text-zinc-400 max-w-2xl leading-relaxed">
+                  {featured.excerpt}
+                </p>
+                <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <span className="size-9 rounded-full bg-violet-600 text-white text-xs font-bold flex items-center justify-center">
+                      {featured.author.initials}
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-zinc-900 dark:text-white">
+                        {featured.author.name}
+                      </p>
+                      <p className="text-xs text-zinc-400">{featured.author.role}</p>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-violet-600 dark:text-violet-400">
+                    Leer artículo completo
+                    <ArrowRightIcon className="size-4 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                </div>
               </div>
             </Link>
           </Reveal>
@@ -124,7 +134,13 @@ export default function BlogPage() {
         </div>
 
         {/* ── Grid de artículos ───────────────────────────────────────── */}
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 3 }).map((_, idx) => (
+              <div key={idx} className="cm-surface h-72 animate-pulse bg-zinc-100/70 dark:bg-zinc-900/60" />
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="cm-surface p-12 text-center">
             <p className="text-base font-semibold text-zinc-900 dark:text-white">
               No hay artículos que coincidan con tu búsqueda
@@ -148,7 +164,18 @@ export default function BlogPage() {
                   to={`/blog/${post.slug}`}
                   className="group cm-surface overflow-hidden flex flex-col h-full transition-all hover:shadow-md hover:-translate-y-0.5"
                 >
-                  <div className={`h-2.5 bg-gradient-to-r ${post.gradient}`} />
+                  {post.featuredImageUrl ? (
+                    <div className="h-44 overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+                      <img
+                        src={post.featuredImageUrl}
+                        alt={post.title}
+                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                  ) : (
+                    <div className={`h-2.5 bg-gradient-to-r ${post.gradient}`} />
+                  )}
                   <div className="p-6 flex-1 flex flex-col">
                     <div className="flex items-center justify-between gap-2 text-xs">
                       <span className="rounded-full bg-violet-50 dark:bg-violet-600/15 px-2.5 py-0.5 font-semibold text-violet-700 dark:text-violet-300">

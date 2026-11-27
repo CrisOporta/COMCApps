@@ -10,6 +10,8 @@ import {
   type LocalServiceCategory,
   type LocalServiceItem,
 } from '../data/localData';
+import type { WithMedia } from '@/shared/lib/cmsApi';
+import { parseJsonArray, useCmsCollection, useSiteSettings } from '@/shared/hooks/useCmsData';
 import { Blob } from '@/shared/components/ui/Blob';
 import { Reveal } from '@/shared/components/ui/Reveal';
 import { SectionHeader } from '@/shared/components/ui/SectionHeader';
@@ -26,23 +28,71 @@ import {
 } from '@/shared/components/ui/Icons';
 import { toast } from '@/shared/lib/toast';
 
-function buildWhatsAppUrl(serviceTitle?: string): string {
+function buildWhatsAppUrl(whatsappNumber: string, serviceTitle?: string): string {
+  const cleanNumber = whatsappNumber.replace(/\D/g, '') || LOCAL_BRANCH.whatsappNumber;
   const text = serviceTitle
     ? `Hola equipo de COMCApps, me interesa solicitar información o cotizar el servicio: ${serviceTitle}.`
     : 'Hola equipo de COMCApps, quisiera consultar sobre los servicios de su sucursal local / a domicilio.';
-  return `https://wa.me/${LOCAL_BRANCH.whatsappNumber}?text=${encodeURIComponent(text)}`;
+  return `https://wa.me/${cleanNumber}?text=${encodeURIComponent(text)}`;
+}
+
+interface ApiLocalService {
+  id: number;
+  slug: string;
+  title: string;
+  category: LocalServiceCategory;
+  icon: string;
+  shortDesc: string;
+  fullDesc: string;
+  turnaround: string;
+  homeServiceAvailable: boolean;
+  instantDelivery: boolean;
+  featured: boolean;
+  highlightsJson: string;
+  idealFor: string;
+}
+
+function mapLocalService({ item, featuredImageUrl, media }: WithMedia<ApiLocalService>): LocalServiceItem {
+  const fallback = LOCAL_SERVICES.find(s => s.id === item.slug);
+  const parsedHighlights = parseJsonArray<string>(item.highlightsJson);
+  const highlights = parsedHighlights.length > 0 ? parsedHighlights : (fallback?.highlights ?? []);
+  const gallery = media.map(m => m.url);
+  return {
+    id: item.slug,
+    title: item.title,
+    category: item.category,
+    shortDesc: item.shortDesc,
+    fullDesc: item.fullDesc || item.shortDesc,
+    imageUrl: featuredImageUrl || fallback?.imageUrl || '/banner.png',
+    imageAlt: item.title,
+    gallery: gallery.length > 0 ? gallery : undefined,
+    icon: item.icon || 'computer',
+    turnaround: item.turnaround || 'Mismo día',
+    homeServiceAvailable: item.homeServiceAvailable,
+    instantDelivery: item.instantDelivery,
+    featured: item.featured,
+    highlights,
+    idealFor: item.idealFor || fallback?.idealFor || '',
+  };
 }
 
 export default function LocalServicesPage() {
+  const settings = useSiteSettings();
+  const { items: servicesList, loading: loadingServices } = useCmsCollection<ApiLocalService, LocalServiceItem>(
+    'local-services',
+    LOCAL_SERVICES,
+    mapLocalService,
+  );
   const [selectedCategory, setSelectedCategory] = useState<'Todos' | LocalServiceCategory>('Todos');
   const [search, setSearch] = useState('');
   const [onlyHomeService, setOnlyHomeService] = useState(false);
   const [activeService, setActiveService] = useState<LocalServiceItem | null>(null);
+  const [activePhotoUrl, setActivePhotoUrl] = useState<string | null>(null);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
   const filteredServices = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return LOCAL_SERVICES.filter(item => {
+    return servicesList.filter(item => {
       if (selectedCategory !== 'Todos' && item.category !== selectedCategory) return false;
       if (onlyHomeService && !item.homeServiceAvailable) return false;
       if (!q) return true;
@@ -54,7 +104,7 @@ export default function LocalServicesPage() {
         item.highlights.some(h => h.toLowerCase().includes(q))
       );
     });
-  }, [selectedCategory, search, onlyHomeService]);
+  }, [servicesList, selectedCategory, search, onlyHomeService]);
 
   const handleCopy = (value: string, label: string) => {
     navigator.clipboard?.writeText(value).then(() => {
@@ -72,12 +122,7 @@ export default function LocalServicesPage() {
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 py-14 sm:py-20">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
             <div className="lg:col-span-7">
-              <div className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-3.5 py-1 text-xs font-semibold uppercase tracking-wide text-violet-700 dark:border-violet-500/30 dark:bg-violet-600/10 dark:text-violet-300">
-                <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-                {LOCAL_BRANCH.badge}
-              </div>
-
-              <h1 className="mt-5 text-4xl sm:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white leading-[1.08]">
+              <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white leading-[1.08]">
                 Centro de Soluciones Tecnológicas:{' '}
                 <span className="text-violet-600 dark:text-violet-400">
                   soporte especializado, infraestructura y sistemas para tu negocio
@@ -98,7 +143,7 @@ export default function LocalServicesPage() {
                   <ArrowRightIcon />
                 </a>
                 <a
-                  href={buildWhatsAppUrl('Servicio Técnico a Domicilio')}
+                  href={buildWhatsAppUrl(settings.whatsAppNumber, 'Servicio Técnico a Domicilio')}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="cm-action cm-action-secondary"
@@ -166,10 +211,10 @@ export default function LocalServicesPage() {
                         Visítanos hoy
                       </p>
                       <p className="text-sm font-bold text-zinc-900 dark:text-white truncate">
-                        {LOCAL_BRANCH.addressLine1}
+                        {settings.addressLine1 || LOCAL_BRANCH.addressLine1}
                       </p>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                        Lun – Vie: 8:00 AM – 6:00 PM · Sáb: 8:30 AM – 4:00 PM
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 truncate">
+                        {settings.schedule || 'Lun – Vie: 8:00 AM – 6:00 PM · Sáb: 8:30 AM – 4:00 PM'}
                       </p>
                     </div>
                   </div>
@@ -260,7 +305,16 @@ export default function LocalServicesPage() {
         </div>
 
         {/* Grid de tarjetas fotográficas */}
-        {filteredServices.length === 0 ? (
+        {loadingServices ? (
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="cm-surface overflow-hidden h-[380px] animate-pulse bg-zinc-100/70 dark:bg-zinc-900/60"
+              />
+            ))}
+          </div>
+        ) : filteredServices.length === 0 ? (
           <div className="mt-10 cm-surface p-12 text-center">
             <MaterialIcon name="search_off" className="text-[40px] text-zinc-400" />
             <h3 className="mt-3 text-base font-bold text-zinc-900 dark:text-white">
@@ -380,11 +434,7 @@ export default function LocalServicesPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             <div className="lg:col-span-5">
               <Reveal>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-wide text-violet-100">
-                  <MaterialIcon name="home_repair_service" className="text-[15px]" />
-                  Cobertura Local
-                </span>
-                <h2 className="mt-4 text-3xl sm:text-4xl font-bold tracking-tight leading-tight">
+                <h2 className="text-3xl sm:text-4xl font-bold tracking-tight leading-tight">
                   ¿No puedes traer tu equipo? Llegamos hasta tu casa u oficina
                 </h2>
                 <p className="mt-4 text-sm sm:text-base text-violet-100/90 leading-relaxed">
@@ -393,7 +443,7 @@ export default function LocalServicesPage() {
                 </p>
                 <div className="mt-7 flex flex-wrap gap-3">
                   <a
-                    href={buildWhatsAppUrl('Solicitud de Servicio Técnico a Domicilio')}
+                    href={buildWhatsAppUrl(settings.whatsAppNumber, 'Solicitud de Servicio Técnico a Domicilio')}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 rounded-full bg-white hover:bg-zinc-50 px-6 py-3 text-sm font-semibold text-violet-700 shadow-lg shadow-violet-950/30 transition-all"
@@ -454,15 +504,18 @@ export default function LocalServicesPage() {
                   Dirección física
                 </p>
                 <p className="mt-1.5 text-base font-bold text-zinc-900 dark:text-white">
-                  {LOCAL_BRANCH.addressLine1}
+                  {settings.addressLine1 || LOCAL_BRANCH.addressLine1}
                 </p>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
-                  {LOCAL_BRANCH.addressLine2}
+                  {settings.addressLine2 || LOCAL_BRANCH.addressLine2}
                 </p>
                 <button
                   type="button"
                   onClick={() =>
-                    handleCopy(`${LOCAL_BRANCH.addressLine1}, ${LOCAL_BRANCH.addressLine2}`, 'Dirección')
+                    handleCopy(
+                      `${settings.addressLine1 || LOCAL_BRANCH.addressLine1}, ${settings.addressLine2 || LOCAL_BRANCH.addressLine2}`,
+                      'Dirección',
+                    )
                   }
                   className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-violet-600 dark:text-violet-400 hover:underline cursor-pointer"
                 >
@@ -493,15 +546,15 @@ export default function LocalServicesPage() {
                 </p>
                 <div className="flex items-center justify-between gap-2">
                   <a
-                    href={`tel:${LOCAL_BRANCH.phone.replace(/\s/g, '')}`}
+                    href={`tel:${(settings.phonePrimary || LOCAL_BRANCH.phone).replace(/\s/g, '')}`}
                     className="inline-flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-200 hover:text-violet-600 dark:hover:text-violet-400"
                   >
                     <PhoneIcon className="size-4 text-violet-600 dark:text-violet-400" />
-                    {LOCAL_BRANCH.phone}
+                    {settings.phonePrimary || LOCAL_BRANCH.phone}
                   </a>
                   <button
                     type="button"
-                    onClick={() => handleCopy(LOCAL_BRANCH.phone, 'Teléfono')}
+                    onClick={() => handleCopy(settings.phonePrimary || LOCAL_BRANCH.phone, 'Teléfono')}
                     className="text-xs font-semibold text-zinc-400 hover:text-violet-600 cursor-pointer"
                   >
                     Copiar
@@ -509,15 +562,15 @@ export default function LocalServicesPage() {
                 </div>
                 <div className="flex items-center justify-between gap-2">
                   <a
-                    href={`mailto:${LOCAL_BRANCH.email}`}
+                    href={`mailto:${settings.localEmail || LOCAL_BRANCH.email}`}
                     className="inline-flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-200 hover:text-violet-600 dark:hover:text-violet-400"
                   >
                     <MailIcon className="size-4 text-violet-600 dark:text-violet-400" />
-                    {LOCAL_BRANCH.email}
+                    {settings.localEmail || LOCAL_BRANCH.email}
                   </a>
                   <button
                     type="button"
-                    onClick={() => handleCopy(LOCAL_BRANCH.email, 'Correo')}
+                    onClick={() => handleCopy(settings.localEmail || LOCAL_BRANCH.email, 'Correo')}
                     className="text-xs font-semibold text-zinc-400 hover:text-violet-600 cursor-pointer"
                   >
                     Copiar
@@ -544,7 +597,7 @@ export default function LocalServicesPage() {
 
             <div className="flex flex-wrap gap-2.5 pt-2">
               <a
-                href={LOCAL_BRANCH.mapsDirectionsUrl}
+                href={settings.mapsDirectionsUrl || LOCAL_BRANCH.mapsDirectionsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 cm-action cm-action-primary text-xs"
@@ -553,7 +606,7 @@ export default function LocalServicesPage() {
                 Cómo llegar en Maps
               </a>
               <a
-                href={buildWhatsAppUrl()}
+                href={buildWhatsAppUrl(settings.whatsAppNumber)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 cm-action cm-action-secondary text-xs"
@@ -567,7 +620,7 @@ export default function LocalServicesPage() {
           <div className="lg:col-span-7 cm-surface overflow-hidden min-h-[380px] flex flex-col">
             <iframe
               title="Mapa de ubicación física COMCApps"
-              src={LOCAL_BRANCH.mapsEmbedUrl}
+              src={settings.mapsEmbedUrl || LOCAL_BRANCH.mapsEmbedUrl}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
               className="w-full flex-1 min-h-[380px] border-0"
@@ -637,14 +690,17 @@ export default function LocalServicesPage() {
           >
             <div className="relative h-56 sm:h-64 shrink-0">
               <img
-                src={activeService.imageUrl}
+                src={activePhotoUrl || activeService.imageUrl}
                 alt={activeService.imageAlt}
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/85 via-zinc-950/25 to-transparent" />
               <button
                 type="button"
-                onClick={() => setActiveService(null)}
+                onClick={() => {
+                  setActiveService(null);
+                  setActivePhotoUrl(null);
+                }}
                 aria-label="Cerrar detalle"
                 className="absolute top-4 right-4 size-9 rounded-full bg-zinc-950/70 text-white hover:bg-zinc-950 flex items-center justify-center cursor-pointer"
               >
@@ -666,6 +722,25 @@ export default function LocalServicesPage() {
             </div>
 
             <div className="p-6 overflow-y-auto space-y-5">
+              {activeService.gallery && activeService.gallery.length > 1 && (
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {activeService.gallery.map((url, idx) => (
+                    <button
+                      key={url}
+                      type="button"
+                      onClick={() => setActivePhotoUrl(url)}
+                      className={`shrink-0 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
+                        (activePhotoUrl || activeService.imageUrl) === url
+                          ? 'border-violet-600 ring-2 ring-violet-500/30'
+                          : 'border-zinc-200 dark:border-zinc-700 opacity-75 hover:opacity-100'
+                      }`}
+                    >
+                      <img src={url} alt={`Foto ${idx + 1}`} className="w-16 h-12 object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
                 {activeService.fullDesc}
               </p>
@@ -694,7 +769,7 @@ export default function LocalServicesPage() {
 
               <div className="flex flex-wrap gap-3 pt-2">
                 <a
-                  href={buildWhatsAppUrl(activeService.title)}
+                  href={buildWhatsAppUrl(settings.whatsAppNumber, activeService.title)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 cm-action cm-action-primary text-xs sm:text-sm"

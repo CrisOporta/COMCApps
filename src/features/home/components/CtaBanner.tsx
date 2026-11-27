@@ -15,9 +15,6 @@ export function CtaBanner({
     <section className="relative overflow-hidden bg-gradient-to-br from-violet-600 to-violet-900 dark:from-violet-700 dark:to-violet-950">
       <div className="mx-auto max-w-4xl px-4 sm:px-6 py-20 sm:py-24 text-center">
         <Reveal>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1 text-xs font-semibold text-violet-100 uppercase tracking-wide mb-5">
-            Comencemos hoy
-          </span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight tracking-tight">
             {title}
           </h2>

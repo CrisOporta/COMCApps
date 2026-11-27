@@ -6,6 +6,7 @@ import { projectsRoutes } from '@/features/projects/routes';
 import { teamRoutes } from '@/features/team/routes';
 import { blogRoutes } from '@/features/blog/routes';
 import { contactRoutes } from '@/features/contact/routes';
+import { adminRoutes } from '@/features/admin/routes';
 import { RouteErrorPage } from './RouteErrorPage';
 import { RouteTitleWatcher } from './RouteTitleWatcher';
 
@@ -22,6 +23,7 @@ const router = createBrowserRouter([
     ),
     errorElement: <RouteErrorPage />,
     children: [
+      ...adminRoutes,
       {
         lazy: async () => ({
           Component: (await import('./layouts/MainLayout')).default,
@@ -34,6 +36,12 @@ const router = createBrowserRouter([
           ...teamRoutes,
           ...blogRoutes,
           ...contactRoutes,
+          {
+            path: '/p/:slug',
+            lazy: async () => ({
+              Component: (await import('@/pages/CustomCmsPage')).default,
+            }),
+          },
           {
             path: '/privacidad',
             lazy: async () => ({

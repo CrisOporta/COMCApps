@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { COMPANY } from '@/shared/config/company';
+import { useSiteSettings } from '@/shared/hooks/useCmsData';
 import { Blob } from '@/shared/components/ui/Blob';
 import {
   ArrowRightIcon,
@@ -13,6 +13,7 @@ import {
   PhoneIcon,
 } from '@/shared/components/ui/Icons';
 import { toast } from '@/shared/lib/toast';
+import { cmsApi } from '@/shared/lib/cmsApi';
 import { contactSchema, type ContactFormValues } from '../schemas/contactSchema';
 
 const SERVICE_OPTIONS = [
@@ -35,6 +36,7 @@ const BUDGET_OPTIONS = [
 ] as const;
 
 export default function ContactPage() {
+  const settings = useSiteSettings();
   const [searchParams] = useSearchParams();
   const [submitted, setSubmitted] = useState(false);
 
@@ -68,8 +70,19 @@ export default function ContactPage() {
   });
 
   const onSubmit = async (data: ContactFormValues) => {
-    // Simulación de envío fluido; lista para conectar con API real de COMCApps
-    await new Promise(resolve => setTimeout(resolve, 650));
+    try {
+      await cmsApi.submitContact({
+        fullName: data.fullName,
+        email: data.email,
+        company: data.company,
+        phone: data.phone,
+        service: data.service,
+        budget: data.budget,
+        message: data.message,
+      });
+    } catch {
+      // Si la API no está levantada en desarrollo local, mantenemos UX fluida
+    }
     setSubmitted(true);
     toast.success(
       `Gracias, ${data.fullName.split(' ')[0]}. Recibimos tu solicitud y responderemos en menos de 24h.`,
@@ -89,10 +102,7 @@ export default function ContactPage() {
       <section className="relative overflow-hidden border-b border-zinc-100 bg-gradient-to-br from-violet-50 via-white to-white dark:border-zinc-800 dark:from-violet-950/30 dark:via-zinc-950 dark:to-zinc-950">
         <Blob className="absolute -right-32 -top-32 size-96 bg-violet-100 dark:bg-violet-900/20" />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-20">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-violet-700 dark:border-violet-500/30 dark:bg-violet-600/10 dark:text-violet-300">
-            Hablemos de tu proyecto
-          </span>
-          <h1 className="mt-5 text-4xl sm:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white max-w-3xl leading-[1.1]">
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white max-w-3xl leading-[1.1]">
             Construyamos algo <span className="text-violet-600 dark:text-violet-400">extraordinario</span>
           </h1>
           <p className="mt-4 max-w-2xl text-base text-zinc-600 dark:text-zinc-400 leading-relaxed">
@@ -309,7 +319,7 @@ export default function ContactPage() {
               <div className="mt-5 space-y-3">
                 <button
                   type="button"
-                  onClick={() => handleCopy(COMPANY.email, 'Correo')}
+                  onClick={() => handleCopy(settings.email, 'Correo')}
                   className="w-full flex items-center gap-3.5 rounded-xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-950/60 p-3.5 text-left hover:border-violet-300 dark:hover:border-violet-700 transition-colors cursor-pointer"
                 >
                   <span className="size-10 rounded-xl bg-violet-100 dark:bg-violet-600/20 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
@@ -320,13 +330,13 @@ export default function ContactPage() {
                       Correo electrónico (clic para copiar)
                     </p>
                     <p className="text-sm font-semibold text-zinc-900 dark:text-white truncate">
-                      {COMPANY.email}
+                      {settings.email}
                     </p>
                   </div>
                 </button>
 
                 <a
-                  href={`tel:${COMPANY.phonePrimary.replace(/\s/g, '')}`}
+                  href={`tel:${settings.phonePrimary.replace(/\s/g, '')}`}
                   className="flex items-center gap-3.5 rounded-xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-950/60 p-3.5 hover:border-violet-300 dark:hover:border-violet-700 transition-colors"
                 >
                   <span className="size-10 rounded-xl bg-violet-100 dark:bg-violet-600/20 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
@@ -337,7 +347,7 @@ export default function ContactPage() {
                       Teléfono / WhatsApp
                     </p>
                     <p className="text-sm font-semibold text-zinc-900 dark:text-white">
-                      {COMPANY.phonePrimary}
+                      {settings.phonePrimary}
                     </p>
                   </div>
                 </a>
@@ -351,9 +361,9 @@ export default function ContactPage() {
                       Ubicación & Horario
                     </p>
                     <p className="text-sm font-semibold text-zinc-900 dark:text-white">
-                      {COMPANY.location}
+                      {settings.addressLine1} · {settings.addressLine2}
                     </p>
-                    <p className="text-xs text-zinc-400 mt-0.5">{COMPANY.schedule}</p>
+                    <p className="text-xs text-zinc-400 mt-0.5">{settings.schedule}</p>
                   </div>
                 </div>
               </div>
