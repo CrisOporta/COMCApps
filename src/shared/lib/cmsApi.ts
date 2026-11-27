@@ -1,6 +1,6 @@
 export const API_BASE_URL =
   (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/+$/, '') ||
-  'http://localhost:5280';
+  'https://api-comcapps.comcapps.com';
 
 const TOKEN_KEY = 'comcapps_admin_access_token';
 const REFRESH_KEY = 'comcapps_admin_refresh_token';
